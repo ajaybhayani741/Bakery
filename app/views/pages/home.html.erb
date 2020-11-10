@@ -1,0 +1,40 @@
+<h1>Bakery Products</h1>
+<p>Find me in app/views/pages/home.html.erb</p>
+<%= image_tag 'products.png' %>
+<br>
+<br>
+Vegemite Scroll <%= number_field_tag :VS, {}, placeholder: 10 %>
+Blueberry Muffin <%= number_field_tag :BF, {}, placeholder: 10 %>
+Croissant <%= number_field_tag :CF, {}, placeholder: 10 %>
+<%= button_tag 'Order', id: 'orderBtn' %>
+<br>
+<br>
+<br>
+<div>
+  <div>
+    <b>Vegemite Scroll:</b> <span id="VS5"><span>
+  </div>
+  <div>
+    <b>Blueberry Muffin:</b> <span id="MB11"><span>
+  </div>
+  <div>
+    <b>Croissant:</b> <span id="CFS"><span>
+  </div>
+</div>
+
+<script>
+$(document).ready(function () {
+  $('#orderBtn').click(function(){
+    vegemiteScroll = $('#VS').val();
+    blueberryMuffin = $('#BF').val();
+    croissant = $('#CF').val();
+    data = { 'vegemite_scroll': vegemiteScroll, 'blueberry_muffin': blueberryMuffin, 'croissant': croissant }
+    $.get('/process_order.js', data, function(res){
+      console.log(res);
+      $('#VS5').html(JSON.stringify(res.vegemite_scroll))
+      $('#MB11').html(JSON.stringify(res.blueberry_muffin))
+      $('#CFS').html(JSON.stringify(res.croissant))
+    });
+  });
+});
+</script>
