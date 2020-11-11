@@ -11,30 +11,80 @@ Croissant <%= number_field_tag :CF, {}, placeholder: 10 %>
 <br>
 <br>
 <div>
+  Output:
+</div>
+<div>
   <div>
-    <b>Vegemite Scroll:</b> <span id="VS5"><span>
+    <span id="VS5">
+    <span>
   </div>
+  <br>
   <div>
-    <b>Blueberry Muffin:</b> <span id="MB11"><span>
+    <span id="MB11"><span>
   </div>
+  <br>
   <div>
-    <b>Croissant:</b> <span id="CFS"><span>
+    <span id="CFS"><span>
   </div>
 </div>
 
 <script>
-$(document).ready(function () {
-  $('#orderBtn').click(function(){
-    vegemiteScroll = $('#VS').val();
-    blueberryMuffin = $('#BF').val();
-    croissant = $('#CF').val();
-    data = { 'vegemite_scroll': vegemiteScroll, 'blueberry_muffin': blueberryMuffin, 'croissant': croissant }
-    $.get('/process_order.js', data, function(res){
-      console.log(res);
-      $('#VS5').html(JSON.stringify(res.vegemite_scroll))
-      $('#MB11').html(JSON.stringify(res.blueberry_muffin))
-      $('#CFS').html(JSON.stringify(res.croissant))
+  function split_response(data, productCode) {
+    if (data) {
+      op = JSON.parse(data['items'])
+      orders = []
+      sum = 0
+      for(pp in op) {
+        output = "<div>"+op[pp]['value'] + ' x ' + op[pp]['key']['count'] + ' $' + op[pp]['key']['cost']+"</div>"
+        sum += (op[pp]['value'] * op[pp]['key']['count'])
+        orders.push(output)
+      }
+      output = sum + ' '+productCode+': $' + data['sum']
+      return {opt: output, ords: orders}
+    }
+  }
+
+  $(document).ready(function () {
+    $('#orderBtn').click(function(){
+      vegemiteScroll = $('#VS').val();
+      blueberryMuffin = $('#BF').val();
+      croissant = $('#CF').val();
+      data = { 'vegemite_scroll': vegemiteScroll, 'blueberry_muffin': blueberryMuffin, 'croissant': croissant }
+      $.get('/process_order.js', data, function(res){
+        console.log("response",res);
+        vsResponse = split_response( res.vegemite_scroll, 'VS5' )
+        if (vsResponse && vsResponse.opt && vsResponse.ords) {
+          $('#VS5').html(vsResponse.opt+ 
+                          "<div>"+
+                            $.each(vsResponse.ords, function (ordr) {
+                              ordr
+                            })+
+                          "</div>"
+                          )
+        }
+
+        mbResponse = split_response( res.blueberry_muffin, 'MB11' )
+        if (mbResponse && mbResponse.opt && mbResponse.ords) {
+          $('#MB11').html(mbResponse.opt+ 
+                          "<div>"+
+                            $.each(mbResponse.ords, function (ordr) {
+                              ordr
+                            })+
+                          "</div>"
+                          )
+        }
+
+        cfResponse = split_response( res.croissant, 'CF' )
+        if (cfResponse && cfResponse.opt && cfResponse.ords) {
+          $('#CFS').html(cfResponse.opt+ 
+                          "<div>"+
+                            $.each(cfResponse.ords, function (ordr) {
+                              ordr
+                            })+
+                          "</div>"
+                          )
+        }
+      });
     });
   });
-});
 </script>

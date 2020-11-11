@@ -21,7 +21,7 @@ class PagesController < ApplicationController
 
   private
     def get_rules(code,total_number)
-      @arr = [ {
+      arr = [ {
           code: 'VS5',
           packs: [ {count: 3, cost: 6.99},
                     {count: 5, cost: 8.99} ]
@@ -40,53 +40,44 @@ class PagesController < ApplicationController
         },
       ]
 
-      packs = @arr.find {|item| item[:code] == code }[:packs].sort_by{|e| -e[:count]}
-      puts "---------- packs = #{packs}"
+      packs = arr.find {|item| item[:code] == code }[:packs].sort_by{|e| -e[:count]}
 
       total = 0 
-      @final_items = []
+      final_items = []
       packs.each do |item| 
-        @final_items = []
+        final_items = []
         current_count = item[:count] 
 
         if (total_number % current_count == 0) 
-          # @final_items << { item: item, collect: (total_number / current_count) }
-          (total_number / current_count).times { @final_items << item }
+          (total_number / current_count).times { final_items << item }
 
           total = total_number
           break 
         elsif 
           return_int = total_number / current_count
-          # puts "-----0------#{return_int}---#{}"
 
           return_int.times do |i| 
-            # puts "-----0.01------#{i}" 
-            @final_items = []
+            final_items = []
 
             total = current_count * (return_int-i)
-            (return_int-i).times { @final_items << item }
-            # @final_items = [{ item: item, collect: ((return_int-i)) }]
+            (return_int-i).times { final_items << item }
 
-            puts "-----1------#{total}" 
             packs.each do |pack| 
               next if pack == item 
 
               tt = 1 
               loop do 
               if total >= total_number 
-                # puts "-----2.1---#{pack[:count]}---#{tt}--#{total}" 
                 if total == total_number
                   break
                 else
                   total = total - (pack[:count]) if tt > 1
                 end
-                puts "-----2.2-----#{total_number}---#{total}" 
                 break 
               else 
                 total += pack[:count]   
-                @final_items << pack if total <= total_number 
+                final_items << pack if total <= total_number 
                 tt += 1 
-                puts "-----2------#{total}" 
               end 
               end 
               break if total == total_number
@@ -101,6 +92,13 @@ class PagesController < ApplicationController
         break if total == total_number
 
       end
-      @final_items = @final_items.inject(Hash.new(0)) { |h, e| h[e] += 1 ; h }
+      sum = final_items.sum { |a| a[:cost] }.round(2)
+      final_items = final_items.inject(Hash.new(0)) { |h, e| h[e] += 1 ; h }
+
+      final_result = {}
+      final_result['items'] =  final_items.map{|a,b| {key: a,value: b}}.to_json
+      final_result['sum'] = sum
+
+      final_result
     end
 end
